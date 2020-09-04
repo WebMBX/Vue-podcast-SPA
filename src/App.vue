@@ -5,12 +5,7 @@
       <router-link to="/about">Информация</router-link>
     </div>
     <keep-alive include="Home">
-      <router-view
-        :podcasts="podcasts"
-        :isLoading="isLoading"
-        :loaderText="loaderText"
-        :isPaused="isPaused"
-      />
+      <router-view :isLoading="isLoading" :loaderText="loaderText" />
     </keep-alive>
     <Aplayer :music="music" />
   </div>
@@ -67,10 +62,9 @@ export default {
 
       this.isLoading = false;
 
-      this.podcasts = allTracks;
+      this.$store.commit("tracks", allTracks);
     } catch (error) {
       console.log(error);
-      this.podcasts = [];
       // this.loaderText = "Треков пока нету :(";
       this.loaderText = "Произошла ошибка :(";
       this.isLoading = false;
@@ -78,49 +72,26 @@ export default {
   },
 
   mounted() {
-    document.querySelector(".aplayer-pic").addEventListener("click", () => {
-      if (!this.isPlayerPaused && this.lastPlayed) {
-        this.playAnimation();
-      }
-      this.stopPulse();
+    document.querySelector(".aplayer-pic").addEventListener("click", (e) => {
+      console.log(e.target);
       console.log(this.lastPlayed);
     });
 
     const audio = document.querySelector("audio");
     audio.onpause = () => {
-      this.stopPulse();
-      // this.isPaused = true;
+      this.$store.commit("state", "pause");
     };
     audio.onplay = () => {
-      this.playAnimation();
-      // this.isPaused = false;
+      this.$store.commit("state", "play");
     };
 
     this.$on("play", function(id) {
       this.play(id);
+      this.$store.commit("lastTrack", id);
     });
   },
 
   methods: {
-    stopPulse() {
-      document.querySelectorAll(".pulsating-circle").forEach((element) => {
-        element.classList.remove("pulsating-circle");
-      });
-    },
-
-    playAnimation() {
-      const element = this.podcasts.find(
-        (el) => el.src === document.querySelector("audio").getAttribute("src")
-      );
-
-      if (!element) return;
-
-      document
-        .querySelector(`[data-track-id="${element.id}"]`)
-        .querySelector(".card__play-icon")
-        .classList.add("pulsating-circle");
-    },
-
     isPlayerPaused() {
       const player = document.querySelector("audio");
       return player.paused;
@@ -128,14 +99,15 @@ export default {
 
     play(id) {
       console.log(id);
-      const track = this.podcasts.filter((track) => track.id === id)[0];
+      // const track = this.podcasts.filter((track) => track.id === id)[0];
+      const track = this.$store.getters.currentTrackData(id);
       if (!track || !track.id) return;
       const player = document.querySelector("audio");
       player.pause();
       player.currentTime = 0;
       player.src = track.src;
 
-      this.stopPulse();
+      this.$store.commit("pause", true);
 
       this.music.title = track.title;
       this.music.pic = track.pic;
@@ -147,7 +119,8 @@ export default {
           document
             .querySelector(`[data-track-id="${track.id}"] .card__play-icon`)
             .classList.add("pulsating-circle")
-        );
+        )
+        .then(() => this.$store.commit("pause", false));
     },
   },
 };
@@ -167,6 +140,7 @@ body {
 
 #nav {
   padding: 30px;
+  text-align: left;
 
   a {
     font-weight: bold;

@@ -9,6 +9,7 @@
     <img :src="data.pic" alt="" class="card__img" />
     <img
       class="card__play-icon"
+      :class="$store.getters.playing === data.id ? 'pulsating-circle' : null"
       src="@/assets/play_btn.svg"
       :data-track-id="data.id"
       @click="play(data.id)"
@@ -48,6 +49,7 @@ export default {
       ],
     };
   },
+
   methods: {
     randomBackground() {
       const element = this.gradients[

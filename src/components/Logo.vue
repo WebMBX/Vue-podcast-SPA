@@ -6,7 +6,7 @@
 .Logo {
   animation: 4.5s appear;
   margin: auto;
-  width: 200px;
+  width: 80px;
   display: block;
 }
 

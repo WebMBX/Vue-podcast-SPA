@@ -15,10 +15,12 @@
         </h5>
       </div>
 
-      <!-- <aplayer :music="music" /> -->
-      <div v-if="!isLoading && podcasts.length" class="podcasts-cont">
+      <div
+        v-if="!isLoading && $store.state.tracks.length"
+        class="podcasts-cont"
+      >
         <PodcastCard
-          v-for="podcast in podcasts"
+          v-for="podcast in $store.state.tracks"
           :key="podcast.id"
           :data="podcast"
           :play="next"
@@ -34,17 +36,14 @@
 </template>
 
 <script>
-// import Parser from "rss-parser";
 import Logo from "../components/Logo";
-// import Aplayer from "vue-aplayer";
 import PodcastCard from "../components/PodcastCard";
 import { Stretch } from "vue-loading-spinner";
 export default {
-  props: ["isLoading", "podcasts", "loaderText", "isPaused"],
+  props: ["isLoading", "loaderText"],
   name: "Home",
   components: {
     Logo,
-    // Aplayer,
     PodcastCard,
     Stretch,
   },
@@ -52,33 +51,6 @@ export default {
   methods: {
     next(id) {
       this.$parent.$emit("play", id);
-    },
-
-    stopPulse() {
-      document.querySelectorAll(".pulsating-circle").forEach((element) => {
-        element.classList.remove("pulsating-circle");
-      });
-    },
-
-    playAnimation() {
-      const element = this.podcasts.find(
-        (el) => el.src === document.querySelector("audio").getAttribute("src")
-      );
-
-      if (!element) return;
-
-      document
-        .querySelector(`[data-track-id="${element.id}"]`)
-        .querySelector(".card__play-icon")
-        .classList.add("pulsating-circle");
-    },
-  },
-
-  watch: {
-    $route(to) {
-      if (to.name === "Home") {
-        this.isPaused ? this.stopPulse() : this.playAnimation();
-      }
     },
   },
 };
